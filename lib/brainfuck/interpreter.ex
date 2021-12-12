@@ -1,5 +1,6 @@
 defmodule Brainfuck.Interpreter do
   @tape [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  @loop_stack []
   @valid_input ~r/^[+-<>.,\[\]]+$/
 
   def run(program) do
@@ -12,48 +13,69 @@ defmodule Brainfuck.Interpreter do
 
   defp execute_program(program) do
     tape = @tape
+    ls = @loop_stack
     pointer = 0
+    ci = 0
     instructions = String.graphemes(program)
     IO.puts("Output:")
 
-    Enum.reduce(instructions, {tape, pointer}, fn ins, {t, p} ->
-      execute_instruction(ins, t, p)
-    end)
+    :done = execute_instruction(instructions, tape, pointer, ls, ci)
   end
 
-  defp execute_instruction(ins, tape, pointer) do
-    case ins do
-      "+" ->
-        curr = Enum.at(tape, pointer)
-        tape = List.replace_at(tape, pointer, curr + 1)
-        {tape, pointer}
+  defp execute_instruction(instructions, tape, pointer, ls, ci) do
+    if ci >= length(instructions) do
+      :done
+    else
+      ins = Enum.at(instructions, ci)
 
-      "-" ->
-        curr = Enum.at(tape, pointer)
-        tape = List.replace_at(tape, pointer, curr - 1)
-        {tape, pointer}
+      case ins do
+        "+" ->
+          curr = Enum.at(tape, pointer)
+          tape = List.replace_at(tape, pointer, curr + 1)
+          execute_instruction(instructions, tape, pointer, ls, ci + 1)
 
-      "<" ->
-        {tape, pointer - 1}
+        "-" ->
+          curr = Enum.at(tape, pointer)
+          tape = List.replace_at(tape, pointer, curr - 1)
+          execute_instruction(instructions, tape, pointer, ls, ci + 1)
 
-      ">" ->
-        {tape, pointer + 1}
+        "<" ->
+          execute_instruction(instructions, tape, pointer - 1, ls, ci + 1)
 
-      "." ->
-        Enum.at(tape, pointer)
-        |> to_print()
-        |> IO.inspect(syntax_colors: [number: :blue, string: :green])
+        ">" ->
+          execute_instruction(instructions, tape, pointer + 1, ls, ci + 1)
 
-        {tape, pointer}
+        "." ->
+          Enum.at(tape, pointer)
+          |> to_print()
+          |> IO.inspect(syntax_colors: [number: :blue, string: :green])
 
-      "," ->
-        number =
-          IO.gets("Input number: ")
-          |> String.trim()
-          |> String.to_integer()
+          execute_instruction(instructions, tape, pointer, ls, ci + 1)
 
-        tape = List.replace_at(tape, pointer, number)
-        {tape, pointer}
+        "," ->
+          number =
+            IO.gets("Input number: ")
+            |> String.trim()
+            |> String.to_integer()
+
+          tape = List.replace_at(tape, pointer, number)
+          execute_instruction(instructions, tape, pointer, ls, ci + 1)
+
+        "[" ->
+          # TODO the loop should not start if the value at pointer is 0
+          # instead it should jump to the end of the loop
+          ls = [ci | ls]
+          execute_instruction(instructions, tape, pointer, ls, ci + 1)
+
+        "]" ->
+          if Enum.at(tape, pointer) == 0 do
+            ls = List.delete_at(ls, 0)
+            execute_instruction(instructions, tape, pointer, ls, ci + 1)
+          else
+            loop_start = hd(ls)
+            execute_instruction(instructions, tape, pointer, ls, loop_start + 1)
+          end
+      end
     end
   end
 
