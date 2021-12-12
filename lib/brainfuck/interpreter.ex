@@ -1,4 +1,5 @@
 defmodule Brainfuck.Interpreter do
+  require Logger
   @tape [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   @loop_stack []
   @valid_input ~r/^[+-<>.,\[\]]+$/
@@ -24,6 +25,10 @@ defmodule Brainfuck.Interpreter do
 
   defp execute_instruction(instructions, tape, pointer, ls, ci) do
     if ci >= length(instructions) do
+      if !Enum.empty?(ls) do
+        Logger.warn("Loop starting at position #{hd(ls)} was never closed")
+      end
+
       :done
     else
       ins = Enum.at(instructions, ci)

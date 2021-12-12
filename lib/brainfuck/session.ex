@@ -1,6 +1,8 @@
 defmodule Brainfuck.Session do
   use GenServer
 
+  @commands ~r/^[\)[:alpha:]]+$/
+
   def start_link(state \\ %{}) do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
@@ -16,16 +18,16 @@ defmodule Brainfuck.Session do
   def handle_info(:get_input, state) do
     program = IO.gets("\nAwaiting input\n\n") |> String.trim()
 
-    case program do
-      "quit" ->
-        {:stop, :shutdown, state}
+    case String.match?(program, @commands) do
+      true ->
+        Brainfuck.Commands.run(program)
 
       _ ->
         Brainfuck.Interpreter.run(program)
-
-        call()
-        {:noreply, state}
     end
+
+    call()
+    {:noreply, state}
   end
 
   defp call do
