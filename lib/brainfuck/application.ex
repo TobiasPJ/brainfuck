@@ -8,6 +8,7 @@ defmodule Brainfuck.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      Brainfuck.Setting,
       Brainfuck.Session
     ]
 

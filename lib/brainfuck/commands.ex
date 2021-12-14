@@ -1,7 +1,7 @@
 defmodule Brainfuck.Commands do
   def run(command) do
     case String.downcase(command) do
-      ")help" -> render_info()
+      "help" -> render_info()
       _ -> IO.puts("Unknown command")
     end
   end
