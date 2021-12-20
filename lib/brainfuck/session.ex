@@ -1,6 +1,10 @@
 defmodule Brainfuck.Session do
   use GenServer
 
+  alias IO.ANSI
+
+  @prompt ANSI.cyan() <> "brainfuck>>> " <> ANSI.reset()
+
   def start_link(state \\ %{}) do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
@@ -14,17 +18,24 @@ defmodule Brainfuck.Session do
 
   @impl true
   def handle_info(:get_input, state) do
-    program = IO.gets("\nAwaiting input\n\n") |> String.trim()
+    IO.write(@prompt)
+    input = IO.gets("") |> format_string()
 
-    case program do
-      <<?), command::binary>> ->
+    case input do
+      ")" <> command ->
         Brainfuck.Commands.run(command)
 
-      <<?], setting::binary>> ->
+      "]" <> setting ->
         IO.inspect(call_setting(setting), syntax_colors: [atom: :blue])
 
+      "run" <> file_path ->
+        Brainfuck.Commands.run("run", file_path)
+
+      "edit" <> file_path ->
+        Brainfuck.Commands.run("edit", file_path)
+
       _ ->
-        Brainfuck.Interpreter.run(program)
+        Brainfuck.Interpreter.run(input)
     end
 
     call()
@@ -40,5 +51,12 @@ defmodule Brainfuck.Session do
       [setting] -> Brainfuck.Setting.get_setting(setting)
       [setting, value] -> Brainfuck.Setting.set_setting(setting, value)
     end
+  end
+
+  defp format_string(input) do
+    input
+    |> String.trim()
+    |> String.replace("\n", "")
+    |> String.replace(" ", "")
   end
 end

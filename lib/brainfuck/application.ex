@@ -9,6 +9,7 @@ defmodule Brainfuck.Application do
   def start(_type, _args) do
     children = [
       Brainfuck.Setting,
+      Brainfuck.History,
       Brainfuck.Session
     ]
 

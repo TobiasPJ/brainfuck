@@ -7,7 +7,8 @@ defmodule Brainfuck.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      config_path: "./config/config.exs"
     ]
   end
 
@@ -22,7 +23,8 @@ defmodule Brainfuck.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:table_rex, "~> 3.1.1"}
+      {:table_rex, "~> 3.1.1"},
+      {:jason, "~> 1.2"}
     ]
   end
 end
