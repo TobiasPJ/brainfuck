@@ -11,6 +11,10 @@ defmodule Brainfuck.Session do
 
   @impl true
   def init(_init_arg) do
+    IO.puts(
+      "Type )help for help, )settings to see avalible settings and )commands to see avalible commands"
+    )
+
     call()
 
     {:ok, %{}}
@@ -33,6 +37,9 @@ defmodule Brainfuck.Session do
 
       "edit" <> file_path ->
         Brainfuck.Commands.run("edit", file_path)
+
+      "p" <> number ->
+        Brainfuck.Commands.run("p", number)
 
       _ ->
         Brainfuck.Interpreter.run(input)

@@ -4,6 +4,8 @@ defmodule Brainfuck.Commands do
   def run(command) do
     case String.downcase(command) do
       "help" -> render_info()
+      "settings" -> render_settings()
+      "commands" -> render_commands()
       "save" -> save_program()
       "saved" -> display_saved_programs()
       _ -> IO.puts("Unknown command")
@@ -14,6 +16,7 @@ defmodule Brainfuck.Commands do
     case command do
       "run" -> run_program(value)
       "edit" -> edit_program(value)
+      "p" -> get_program(value)
       _ -> IO.puts("Unknown command")
     end
   end
@@ -34,6 +37,40 @@ defmodule Brainfuck.Commands do
         "]",
         "If the value of the current cell is 0, the next instruction will execute, else jump to the beginning of the loop"
       ]
+    ]
+
+    TableRex.quick_render!(rows, header, title) |> IO.puts()
+  end
+
+  defp render_settings do
+    title = "Avalible settings (all start with ])"
+    header = ["Setting", "Description"]
+
+    rows = [
+      ["output", "Sets the type of the output can be text or numbers"],
+      ["save_folder", "Defaults to the path of the applicaton but can be set to other"],
+      ["vis", "Turns on/off visualizer, can be on or off"],
+      ["speed", "Sets the speed of the visualization in ms"]
+    ]
+
+    TableRex.quick_render!(rows, header, title) |> IO.puts()
+  end
+
+  defp render_commands do
+    title = "Avalible commands"
+    header = ["Command", "Description"]
+
+    rows = [
+      [")help", "Explains Brainfuck syntax"],
+      [")settings", "Show all available settings"],
+      [")commands", "Shows all available commands"],
+      [")save", "Will save the last program that was ran"],
+      [")saved", "Will display all saved files"],
+      [
+        "run <file_name>",
+        "Will run the given file can be just name if file is saved in save_folder or a complete path"
+      ],
+      ["edit <file_name>", "Will open the file in the default editor"]
     ]
 
     TableRex.quick_render!(rows, header, title) |> IO.puts()
@@ -61,6 +98,15 @@ defmodule Brainfuck.Commands do
 
       false ->
         IO.puts("This file does not exist")
+    end
+  end
+
+  def get_program(number) do
+    number = String.to_integer(number)
+
+    case Brainfuck.History.get_program(number) do
+      :NA -> IO.puts("No history that far back was found")
+      program -> IO.write(program)
     end
   end
 

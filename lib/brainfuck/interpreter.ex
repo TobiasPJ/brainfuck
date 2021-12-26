@@ -11,7 +11,7 @@ defmodule Brainfuck.Interpreter do
   def run(program) do
     if String.match?(program, @valid_input) do
       execute_program(program)
-      Brainfuck.History.set_latest_program(program)
+      Brainfuck.History.add_program(program)
       :ok
     else
       IO.puts("INVALID INPUT")
